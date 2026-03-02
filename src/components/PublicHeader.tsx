@@ -89,7 +89,7 @@ const PublicHeader = () => {
               </Button>
             </Link>
           ) : (
-            <Link to="/login">
+            <Link to="/admin">
               <Button size="sm" variant="outline" className="gap-1.5">
                 <LogIn className="h-3.5 w-3.5" />
                 {t("nav.login")}

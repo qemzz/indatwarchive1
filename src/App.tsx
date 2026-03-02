@@ -44,7 +44,7 @@ const App = () => (
                 </Route>
 
                 {/* Auth */}
-                <Route path="/login" element={<LoginPage />} />
+                <Route path="/admin/login" element={<LoginPage />} />
 
                 {/* Admin */}
                 <Route path="/admin" element={<AdminLayout />}>
