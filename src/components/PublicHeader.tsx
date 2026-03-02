@@ -81,18 +81,11 @@ const PublicHeader = () => {
             {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </Button>
 
-          {isAuthenticated ? (
+          {isAuthenticated && (
             <Link to="/admin">
               <Button size="sm" className="gap-1.5">
                 <LayoutDashboard className="h-3.5 w-3.5" />
                 {t("nav.dashboard")}
-              </Button>
-            </Link>
-          ) : (
-            <Link to="/admin">
-              <Button size="sm" variant="outline" className="gap-1.5">
-                <LogIn className="h-3.5 w-3.5" />
-                {t("nav.login")}
               </Button>
             </Link>
           )}
