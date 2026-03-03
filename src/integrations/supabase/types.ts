@@ -14,16 +14,151 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      documents: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          category: string | null
+          class_level: string | null
+          created_at: string
+          deleted_at: string | null
+          download_count: number
+          file_path: string
+          file_size: number | null
+          folder_id: string | null
+          id: string
+          rejection_reason: string | null
+          status: string
+          subject: string | null
+          title: string
+          updated_at: string
+          uploaded_by: string
+          year: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          class_level?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          download_count?: number
+          file_path: string
+          file_size?: number | null
+          folder_id?: string | null
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          subject?: string | null
+          title: string
+          updated_at?: string
+          uploaded_by: string
+          year?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          class_level?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          download_count?: number
+          file_path?: string
+          file_size?: number | null
+          folder_id?: string | null
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          subject?: string | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+          year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      folders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_dos: { Args: never; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "dos" | "teacher"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +285,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["dos", "teacher"],
+    },
   },
 } as const

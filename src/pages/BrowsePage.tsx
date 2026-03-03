@@ -1,36 +1,79 @@
+import { useState, useEffect } from "react";
 import { useI18n } from "@/contexts/I18nContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
+  Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Search, FileText, Download, Filter } from "lucide-react";
+import { Search, FileText, Download } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockDocs = [
-  { id: "1", name: "Mathematics Final Exam 2025.pdf", subject: "Mathematics", class: "S6", year: "2025", category: "Past Papers", size: "2.4 MB", downloads: 142 },
-  { id: "2", name: "Physics Revision Notes.pdf", subject: "Physics", class: "S5", year: "2025", category: "Notes", size: "1.8 MB", downloads: 89 },
-  { id: "3", name: "Chemistry Handbook.pdf", subject: "Chemistry", class: "S4", year: "2025", category: "Books", size: "5.1 MB", downloads: 67 },
-  { id: "4", name: "Biology Mock Exam S3.pdf", subject: "Biology", class: "S3", year: "2024", category: "Mocks", size: "1.2 MB", downloads: 203 },
-  { id: "5", name: "English Literature Guide.pdf", subject: "English", class: "S6", year: "2025", category: "Books", size: "3.7 MB", downloads: 55 },
-  { id: "6", name: "History National Exam 2024.pdf", subject: "History", class: "S6", year: "2024", category: "Past Papers", size: "2.1 MB", downloads: 178 },
-];
+interface Doc {
+  id: string;
+  title: string;
+  file_path: string;
+  file_size: number | null;
+  class_level: string | null;
+  subject: string | null;
+  year: string | null;
+  category: string | null;
+  download_count: number;
+}
 
 const BrowsePage = () => {
   const { t } = useI18n();
+  const [docs, setDocs] = useState<Doc[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filterClass, setFilterClass] = useState("all");
+  const [filterSubject, setFilterSubject] = useState("all");
+  const [filterYear, setFilterYear] = useState("all");
+
+  useEffect(() => {
+    const fetchDocs = async () => {
+      let query = supabase
+        .from("documents")
+        .select("id, title, file_path, file_size, class_level, subject, year, category, download_count")
+        .eq("status", "approved")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+
+      if (filterClass !== "all") query = query.eq("class_level", filterClass);
+      if (filterSubject !== "all") query = query.eq("subject", filterSubject);
+      if (filterYear !== "all") query = query.eq("year", filterYear);
+
+      const { data } = await query;
+      setDocs(data ?? []);
+      setLoading(false);
+    };
+    fetchDocs();
+  }, [filterClass, filterSubject, filterYear]);
+
+  const filtered = docs.filter((d) =>
+    !search || d.title.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleDownload = async (doc: Doc) => {
+    const { data } = supabase.storage.from("documents").getPublicUrl(doc.file_path);
+    if (data?.publicUrl) {
+      window.open(data.publicUrl, "_blank");
+      // Increment download count
+      supabase.from("documents").update({ download_count: doc.download_count + 1 }).eq("id", doc.id).then();
+    }
+  };
+
+  const formatSize = (bytes: number | null) => {
+    if (!bytes) return "";
+    return bytes > 1024 * 1024
+      ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+      : `${(bytes / 1024).toFixed(0)} KB`;
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -40,77 +83,71 @@ const BrowsePage = () => {
             <BreadcrumbLink asChild><Link to="/">{t("nav.home")}</Link></BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink>{t("nav.documents")}</BreadcrumbLink>
-          </BreadcrumbItem>
+          <BreadcrumbItem><BreadcrumbLink>{t("nav.documents")}</BreadcrumbLink></BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
       <h1 className="text-3xl font-display font-bold mb-6">{t("nav.documents")}</h1>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-8">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t("action.search")} className="pl-9" />
+          <Input placeholder={t("action.search")} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <Select>
+        <Select value={filterClass} onValueChange={setFilterClass}>
           <SelectTrigger className="w-32"><SelectValue placeholder={t("label.class")} /></SelectTrigger>
           <SelectContent>
-            {["S1", "S2", "S3", "S4", "S5", "S6"].map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
+            <SelectItem value="all">All Classes</SelectItem>
+            {["S1", "S2", "S3", "S4", "S5", "S6"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select>
+        <Select value={filterSubject} onValueChange={setFilterSubject}>
           <SelectTrigger className="w-40"><SelectValue placeholder={t("label.subject")} /></SelectTrigger>
           <SelectContent>
-            {["Mathematics", "Physics", "Chemistry", "Biology", "English", "History"].map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
-            ))}
+            <SelectItem value="all">All Subjects</SelectItem>
+            {["Mathematics", "Physics", "Chemistry", "Biology", "English", "History"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select>
+        <Select value={filterYear} onValueChange={setFilterYear}>
           <SelectTrigger className="w-32"><SelectValue placeholder={t("label.year")} /></SelectTrigger>
           <SelectContent>
-            {["2025", "2024", "2023"].map((y) => (
-              <SelectItem key={y} value={y}>{y}</SelectItem>
-            ))}
+            <SelectItem value="all">All Years</SelectItem>
+            {["2026", "2025", "2024", "2023"].map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
 
-      {/* Document grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mockDocs.map((doc) => (
-          <Card key={doc.id} className="hover:shadow-md transition-shadow group cursor-pointer">
-            <CardContent className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm truncate group-hover:text-primary transition-colors">
-                    {doc.name}
-                  </h3>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    <Badge variant="secondary" className="text-xs">{doc.class}</Badge>
-                    <Badge variant="outline" className="text-xs">{doc.subject}</Badge>
-                    <Badge variant="outline" className="text-xs">{doc.category}</Badge>
+      {loading ? (
+        <p className="text-center text-muted-foreground py-12">Loading documents...</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-center text-muted-foreground py-12">{t("label.noDocuments")}</p>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((doc) => (
+            <Card key={doc.id} className="hover:shadow-md transition-shadow group cursor-pointer" onClick={() => handleDownload(doc)}>
+              <CardContent className="p-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <FileText className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-                    <span>{doc.size} · {doc.year}</span>
-                    <span className="flex items-center gap-1">
-                      <Download className="h-3 w-3" />
-                      {doc.downloads}
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm truncate group-hover:text-primary transition-colors">{doc.title}</h3>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {doc.class_level && <Badge variant="secondary" className="text-xs">{doc.class_level}</Badge>}
+                      {doc.subject && <Badge variant="outline" className="text-xs">{doc.subject}</Badge>}
+                      {doc.category && <Badge variant="outline" className="text-xs">{doc.category}</Badge>}
+                    </div>
+                    <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
+                      <span>{formatSize(doc.file_size)} · {doc.year}</span>
+                      <span className="flex items-center gap-1"><Download className="h-3 w-3" />{doc.download_count}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

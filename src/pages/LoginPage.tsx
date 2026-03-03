@@ -14,21 +14,42 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login } = useAuth();
+  const [fullName, setFullName] = useState("");
+  const [isSignup, setIsSignup] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const { login, signup } = useAuth();
   const navigate = useNavigate();
   const { t, lang, setLang } = useI18n();
   const { theme, toggleTheme } = useTheme();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login: dos@school.com → DOS, anything else → teacher
-    const role = email.toLowerCase().includes("dos") ? "dos" as const : "teacher" as const;
-    login(email, role);
-    navigate("/admin");
+    setSubmitting(true);
+    try {
+      if (isSignup) {
+        const { error } = await signup(email, password, fullName);
+        if (error) {
+          toast.error(error);
+        } else {
+          toast.success("Account created! Check your email to confirm, then sign in.");
+          setIsSignup(false);
+        }
+      } else {
+        const { error } = await login(email, password);
+        if (error) {
+          toast.error(error);
+        } else {
+          navigate("/admin");
+        }
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -58,18 +79,29 @@ const LoginPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignup && (
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="John Doe" required />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">{t("label.email")}</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teacher@school.com" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t("label.password")}</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
             </div>
-            <Button type="submit" className="w-full">{t("label.signIn")}</Button>
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "..." : isSignup ? "Sign Up" : t("label.signIn")}
+            </Button>
           </form>
           <p className="text-xs text-muted-foreground mt-4 text-center">
-            Demo: use <strong>dos@school.com</strong> for DOS role, any other email for Teacher
+            {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
+            <button type="button" className="text-primary underline" onClick={() => setIsSignup(!isSignup)}>
+              {isSignup ? "Sign In" : "Sign Up"}
+            </button>
           </p>
         </CardContent>
       </Card>
