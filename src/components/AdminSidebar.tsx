@@ -4,27 +4,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard,
-  FileCheck,
-  Upload,
-  FileText,
-  FolderTree,
-  Users,
-  BarChart3,
-  Trash2,
-  Settings,
-  LogOut,
-  Sun,
-  Moon,
-  Globe,
-  BookOpen,
-  ChevronLeft,
+  LayoutDashboard, FileCheck, Upload, FileText, FolderTree,
+  Users, BarChart3, Trash2, LogOut, Sun, Moon, Globe, BookOpen, ChevronLeft,
 } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 interface NavItem {
@@ -55,14 +39,13 @@ const AdminSidebar = () => {
 
   const filteredItems = navItems.filter((item) => !item.dosOnly || role === "dos");
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 
   return (
     <aside className="w-64 min-h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
-      {/* Logo */}
       <div className="h-16 flex items-center gap-2 px-5 border-b border-sidebar-border">
         <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
           <BookOpen className="w-4 h-4 text-sidebar-primary-foreground" />
@@ -70,7 +53,6 @@ const AdminSidebar = () => {
         <span className="font-display font-bold text-base">EduDocs</span>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {filteredItems.map((item) => {
           const isActive = location.pathname === item.to;
@@ -91,7 +73,6 @@ const AdminSidebar = () => {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="p-3 border-t border-sidebar-border space-y-2">
         <div className="flex items-center gap-2 px-3">
           <DropdownMenu>
