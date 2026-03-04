@@ -1,15 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/contexts/I18nContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Upload, FileText, X } from "lucide-react";
+import { Upload, FileText, X, CheckCircle2, Clock3 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+
+type UploadedDocument = {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string;
+};
 
 const UploadPage = () => {
   const { t } = useI18n();
@@ -21,7 +29,27 @@ const UploadPage = () => {
   const [category, setCategory] = useState("");
   const [folderId, setFolderId] = useState("");
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
+  const [recentUploads, setRecentUploads] = useState<UploadedDocument[]>([]);
   const [uploading, setUploading] = useState(false);
+
+  const loadRecentUploads = useCallback(async () => {
+    if (!userId) {
+      setRecentUploads([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("documents")
+      .select("id, title, status, created_at")
+      .eq("uploaded_by", userId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(8);
+
+    if (!error && data) {
+      setRecentUploads(data);
+    }
+  }, [userId]);
 
   useEffect(() => {
     supabase
@@ -33,6 +61,10 @@ const UploadPage = () => {
         if (data) setFolders(data);
       });
   }, []);
+
+  useEffect(() => {
+    loadRecentUploads();
+  }, [loadRecentUploads]);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -61,7 +93,6 @@ const UploadPage = () => {
           .upload(filePath, file);
         if (storageErr) throw storageErr;
 
-        // DOS uploads are auto-approved, teacher uploads are pending
         const status = role === "dos" ? "approved" : "pending";
 
         const { error: dbErr } = await supabase.from("documents").insert({
@@ -85,6 +116,7 @@ const UploadPage = () => {
         : `${files.length} file(s) uploaded and sent for review`;
       toast.success(msg);
       setFiles([]);
+      await loadRecentUploads();
     } catch (err: any) {
       toast.error(err.message || "Upload failed");
     } finally {
@@ -93,11 +125,13 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-display font-bold mb-1">{t("nav.upload")}</h1>
-      <p className="text-muted-foreground text-sm mb-6">
-        {role === "dos" ? "Upload documents (auto-published)" : "Upload documents for review"}
-      </p>
+    <div className="max-w-2xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-display font-bold mb-1">{t("nav.upload")}</h1>
+        <p className="text-muted-foreground text-sm">
+          {role === "dos" ? "Upload documents (auto-published)" : "Upload documents for review"}
+        </p>
+      </div>
 
       <form onSubmit={handleUpload} className="space-y-6">
         <div
@@ -187,8 +221,35 @@ const UploadPage = () => {
           {uploading ? "Uploading..." : `${t("action.upload")} (${files.length} files)`}
         </Button>
       </form>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-display">Uploaded Documents</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {recentUploads.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Your uploaded documents will appear here immediately after upload.</p>
+          ) : (
+            recentUploads.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between gap-3 rounded-lg border bg-card px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{doc.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Uploaded {new Date(doc.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <Badge variant={doc.status === "approved" ? "default" : "secondary"} className="shrink-0 gap-1">
+                  {doc.status === "approved" ? <CheckCircle2 className="h-3 w-3" /> : <Clock3 className="h-3 w-3" />}
+                  {doc.status === "approved" ? "Uploaded" : "Pending review"}
+                </Badge>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
 export default UploadPage;
+
