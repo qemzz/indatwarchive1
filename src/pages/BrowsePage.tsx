@@ -10,7 +10,7 @@ import {
 import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Search, FileText, Download } from "lucide-react";
+import { Search, FileText, Download, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,6 +37,8 @@ const BrowsePage = () => {
 
   useEffect(() => {
     const fetchDocs = async () => {
+      setLoading(true);
+
       let query = supabase
         .from("documents")
         .select("id, title, file_path, file_size, class_level, subject, year, category, download_count")
@@ -59,13 +61,34 @@ const BrowsePage = () => {
     !search || d.title.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDownload = async (doc: Doc) => {
-    const { data } = supabase.storage.from("documents").getPublicUrl(doc.file_path);
-    if (data?.publicUrl) {
-      window.open(data.publicUrl, "_blank");
-      // Increment download count
-      supabase.from("documents").update({ download_count: doc.download_count + 1 }).eq("id", doc.id).then();
+  const getFileUrl = (filePath: string) => {
+    const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
+    return data?.publicUrl ?? null;
+  };
+
+  const handlePreview = (doc: Doc) => {
+    const fileUrl = getFileUrl(doc.file_path);
+    if (fileUrl) {
+      window.open(fileUrl, "_blank", "noopener,noreferrer");
     }
+  };
+
+  const handleDownload = async (doc: Doc) => {
+    const fileUrl = getFileUrl(doc.file_path);
+    if (!fileUrl) return;
+
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.download = doc.title;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    const nextCount = doc.download_count + 1;
+    setDocs((prev) => prev.map((item) => item.id === doc.id ? { ...item, download_count: nextCount } : item));
+    supabase.from("documents").update({ download_count: nextCount }).eq("id", doc.id).then();
   };
 
   const formatSize = (bytes: number | null) => {
@@ -124,14 +147,14 @@ const BrowsePage = () => {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((doc) => (
-            <Card key={doc.id} className="hover:shadow-md transition-shadow group cursor-pointer" onClick={() => handleDownload(doc)}>
-              <CardContent className="p-5">
+            <Card key={doc.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-5 space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     <FileText className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm truncate group-hover:text-primary transition-colors">{doc.title}</h3>
+                    <h3 className="font-medium text-sm truncate">{doc.title}</h3>
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {doc.class_level && <Badge variant="secondary" className="text-xs">{doc.class_level}</Badge>}
                       {doc.subject && <Badge variant="outline" className="text-xs">{doc.subject}</Badge>}
@@ -143,6 +166,17 @@ const BrowsePage = () => {
                     </div>
                   </div>
                 </div>
+
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => handlePreview(doc)}>
+                    <Eye className="h-4 w-4" />
+                    Preview
+                  </Button>
+                  <Button type="button" className="flex-1" onClick={() => handleDownload(doc)}>
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -153,3 +187,4 @@ const BrowsePage = () => {
 };
 
 export default BrowsePage;
+
