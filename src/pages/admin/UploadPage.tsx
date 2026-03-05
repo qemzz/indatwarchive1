@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/contexts/I18nContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLookups } from "@/hooks/useLookups";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ type UploadedDocument = {
 
 const UploadPage = () => {
   const { t } = useI18n();
+  const { subjects, categories, years: yearsList } = useLookups();
   const { userId, role } = useAuth();
   const [files, setFiles] = useState<File[]>([]);
   const [classLevel, setClassLevel] = useState("");
@@ -191,7 +193,7 @@ const UploadPage = () => {
               <Select value={subject} onValueChange={setSubject}>
                 <SelectTrigger><SelectValue placeholder="Select subject" /></SelectTrigger>
                 <SelectContent>
-                  {["Mathematics", "Physics", "Chemistry", "Biology", "English", "History", "Geography", "Economics"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {subjects.map((s) => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -200,7 +202,7 @@ const UploadPage = () => {
               <Select value={year} onValueChange={setYear}>
                 <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
                 <SelectContent>
-                  {["2026", "2025", "2024", "2023", "2022"].map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                  {yearsList.map((y) => <SelectItem key={y.id} value={y.name}>{y.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -209,7 +211,7 @@ const UploadPage = () => {
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
-                  {["National Exam", "Mocks", "Notes", "Revision", "Books"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {categories.map((c) => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
