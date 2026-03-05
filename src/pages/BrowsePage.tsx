@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useI18n } from "@/contexts/I18nContext";
+import { useLookups } from "@/hooks/useLookups";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,7 @@ interface FolderItem {
 
 const BrowsePage = () => {
   const { t } = useI18n();
+  const { subjects, categories: cats, years: yearsList } = useLookups();
   const [docs, setDocs] = useState<Doc[]>([]);
   const [folders, setFolders] = useState<FolderItem[]>([]);
   const [allFolders, setAllFolders] = useState<FolderItem[]>([]);
@@ -190,14 +192,14 @@ const BrowsePage = () => {
           <SelectTrigger className="w-40"><SelectValue placeholder={t("label.subject")} /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Subjects</SelectItem>
-            {["Mathematics", "Physics", "Chemistry", "Biology", "English", "History"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            {subjects.map((s) => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterYear} onValueChange={setFilterYear}>
           <SelectTrigger className="w-32"><SelectValue placeholder={t("label.year")} /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Years</SelectItem>
-            {["2026", "2025", "2024", "2023"].map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+            {yearsList.map((y) => <SelectItem key={y.id} value={y.name}>{y.name}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>

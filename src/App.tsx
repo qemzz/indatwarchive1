@@ -24,6 +24,7 @@ import FoldersPage from "@/pages/admin/FoldersPage";
 import UsersPage from "@/pages/admin/UsersPage";
 import AnalyticsPage from "@/pages/admin/AnalyticsPage";
 import RecycleBinPage from "@/pages/admin/RecycleBinPage";
+import SettingsPage from "@/pages/admin/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
                   <Route path="users" element={<UsersPage />} />
                   <Route path="analytics" element={<AnalyticsPage />} />
                   <Route path="recycle-bin" element={<RecycleBinPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
                 </Route>
 
                 <Route path="*" element={<NotFound />} />

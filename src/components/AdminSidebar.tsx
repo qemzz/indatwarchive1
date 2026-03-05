@@ -5,7 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, FileCheck, Upload, FileText, FolderTree,
-  Users, BarChart3, Trash2, LogOut, Sun, Moon, Globe, BookOpen, ChevronLeft,
+  Users, BarChart3, Trash2, LogOut, Sun, Moon, Globe, BookOpen, ChevronLeft, Settings,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -35,6 +35,7 @@ const AdminSidebar = () => {
     { to: "/admin/users", label: t("nav.users"), icon: <Users className="h-4 w-4" />, dosOnly: true },
     { to: "/admin/analytics", label: t("nav.analytics"), icon: <BarChart3 className="h-4 w-4" />, dosOnly: true },
     { to: "/admin/recycle-bin", label: t("nav.recycleBin"), icon: <Trash2 className="h-4 w-4" />, dosOnly: true },
+    { to: "/admin/settings", label: "Settings", icon: <Settings className="h-4 w-4" />, dosOnly: true },
   ];
 
   const filteredItems = navItems.filter((item) => !item.dosOnly || role === "dos");
