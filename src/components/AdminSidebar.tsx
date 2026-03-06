@@ -5,12 +5,15 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, FileCheck, Upload, FileText, FolderTree,
-  Users, BarChart3, Trash2, LogOut, Sun, Moon, Globe, ChevronLeft, Settings,
+  Users, BarChart3, Trash2, LogOut, Sun, Moon, Globe, ChevronLeft, Settings, Menu, X,
 } from "lucide-react";
-import schoolLogo from "@/assets/school-logo.png";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useState } from "react";
+import schoolLogo from "@/assets/school-logo.png";
 
 interface NavItem {
   to: string;
@@ -25,6 +28,8 @@ const AdminSidebar = () => {
   const { t, lang, setLang } = useI18n();
   const { role, logout, userEmail } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false);
 
   const navItems: NavItem[] = [
     { to: "/admin", label: t("nav.dashboard"), icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -46,8 +51,8 @@ const AdminSidebar = () => {
     navigate("/");
   };
 
-  return (
-    <aside className="w-64 min-h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
+  const sidebarContent = (
+    <>
       <div className="h-16 flex items-center gap-2 px-5 border-b border-sidebar-border">
         <img src={schoolLogo} alt="Indatwa School Logo" className="w-8 h-8 object-contain" />
         <span className="font-display font-bold text-sm">INDATWA ARCHIVE</span>
@@ -60,6 +65,7 @@ const AdminSidebar = () => {
             <Link
               key={item.to}
               to={item.to}
+              onClick={() => setOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 isActive
                   ? "bg-sidebar-accent text-sidebar-primary font-medium"
@@ -96,7 +102,7 @@ const AdminSidebar = () => {
           <p className="text-xs text-sidebar-primary font-medium uppercase">{role}</p>
         </div>
 
-        <Link to="/" className="flex items-center gap-2 px-3 py-2 text-sm text-sidebar-muted hover:text-sidebar-foreground rounded-lg hover:bg-sidebar-accent transition-colors">
+        <Link to="/" onClick={() => setOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-sidebar-muted hover:text-sidebar-foreground rounded-lg hover:bg-sidebar-accent transition-colors">
           <ChevronLeft className="h-4 w-4" />
           {t("nav.home")}
         </Link>
@@ -109,6 +115,40 @@ const AdminSidebar = () => {
           {t("nav.logout")}
         </button>
       </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile top bar */}
+        <div className="fixed top-0 left-0 right-0 z-50 h-14 bg-sidebar text-sidebar-foreground flex items-center justify-between px-4 border-b border-sidebar-border">
+          <div className="flex items-center gap-2">
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-sidebar-muted hover:text-sidebar-foreground">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-64 bg-sidebar text-sidebar-foreground border-sidebar-border">
+                <div className="flex flex-col h-full">
+                  {sidebarContent}
+                </div>
+              </SheetContent>
+            </Sheet>
+            <img src={schoolLogo} alt="Logo" className="w-7 h-7 object-contain" />
+            <span className="font-display font-bold text-sm">INDATWA</span>
+          </div>
+        </div>
+        {/* Spacer for fixed top bar */}
+        <div className="h-14" />
+      </>
+    );
+  }
+
+  return (
+    <aside className="w-64 min-h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
+      {sidebarContent}
     </aside>
   );
 };

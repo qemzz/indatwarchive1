@@ -18,10 +18,10 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="min-h-screen flex w-full">
+    <div className="min-h-screen flex flex-col md:flex-row w-full">
       <AdminSidebar />
       <main className="flex-1 overflow-auto">
-        <div className="p-6 max-w-7xl mx-auto animate-fade-in">
+        <div className="p-4 md:p-6 max-w-7xl mx-auto animate-fade-in">
           <Outlet />
         </div>
       </main>
