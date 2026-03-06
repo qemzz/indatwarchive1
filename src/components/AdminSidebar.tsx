@@ -5,8 +5,9 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, FileCheck, Upload, FileText, FolderTree,
-  Users, BarChart3, Trash2, LogOut, Sun, Moon, Globe, BookOpen, ChevronLeft, Settings,
+  Users, BarChart3, Trash2, LogOut, Sun, Moon, Globe, ChevronLeft, Settings,
 } from "lucide-react";
+import schoolLogo from "@/assets/school-logo.png";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -48,10 +49,8 @@ const AdminSidebar = () => {
   return (
     <aside className="w-64 min-h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
       <div className="h-16 flex items-center gap-2 px-5 border-b border-sidebar-border">
-        <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
-          <BookOpen className="w-4 h-4 text-sidebar-primary-foreground" />
-        </div>
-        <span className="font-display font-bold text-base">EduDocs</span>
+        <img src={schoolLogo} alt="Indatwa School Logo" className="w-8 h-8 object-contain" />
+        <span className="font-display font-bold text-sm">INDATWA ARCHIVE</span>
       </div>
 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
