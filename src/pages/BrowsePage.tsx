@@ -113,7 +113,7 @@ const BrowsePage = () => {
       setLoading(false);
     };
     fetchDocs();
-  }, [currentFolderId, filterClass, filterSubject, filterYear]);
+  }, [currentFolderId, filterClass, filterSubject, filterYear, catParam]);
 
   const filtered = docs.filter((d) =>
     !search || d.title.toLowerCase().includes(search.toLowerCase())
