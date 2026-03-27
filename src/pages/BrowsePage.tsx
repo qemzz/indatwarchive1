@@ -12,7 +12,7 @@ import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Search, FileText, Download, Eye, Folder, ChevronRight, Home } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Doc {
