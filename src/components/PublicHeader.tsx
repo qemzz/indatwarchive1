@@ -43,7 +43,7 @@ const PublicHeader = () => {
               key={link.to}
               to={link.to}
               className={`px-3 py-2 text-sm rounded-md transition-colors ${
-                location.pathname === link.to
+                (location.pathname + location.search) === link.to
                   ? "bg-primary/10 text-primary font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
@@ -112,7 +112,7 @@ const PublicHeader = () => {
                 to={link.to}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
-                  location.pathname === link.to
+                  (location.pathname + location.search) === link.to
                     ? "bg-primary/10 text-primary font-medium"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`}

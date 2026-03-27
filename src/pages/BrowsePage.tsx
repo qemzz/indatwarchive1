@@ -12,7 +12,7 @@ import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Search, FileText, Download, Eye, Folder, ChevronRight, Home } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Doc {
@@ -37,6 +37,8 @@ interface FolderItem {
 const BrowsePage = () => {
   const { t } = useI18n();
   const { subjects, categories: cats, years: yearsList } = useLookups();
+  const [searchParams] = useSearchParams();
+  const catParam = searchParams.get("cat");
   const [docs, setDocs] = useState<Doc[]>([]);
   const [folders, setFolders] = useState<FolderItem[]>([]);
   const [allFolders, setAllFolders] = useState<FolderItem[]>([]);
@@ -90,6 +92,18 @@ const BrowsePage = () => {
       if (currentFolderId) {
         query = query.eq("folder_id", currentFolderId);
       }
+      // Filter by category from URL query param
+      if (catParam) {
+        const categoryMap: Record<string, string> = {
+          "past-papers": "Past Papers",
+          "books": "Books",
+          "notes": "Notes",
+        };
+        const categoryName = categoryMap[catParam];
+        if (categoryName) {
+          query = query.eq("category", categoryName);
+        }
+      }
       if (filterClass !== "all") query = query.eq("class_level", filterClass);
       if (filterSubject !== "all") query = query.eq("subject", filterSubject);
       if (filterYear !== "all") query = query.eq("year", filterYear);
@@ -99,7 +113,7 @@ const BrowsePage = () => {
       setLoading(false);
     };
     fetchDocs();
-  }, [currentFolderId, filterClass, filterSubject, filterYear]);
+  }, [currentFolderId, filterClass, filterSubject, filterYear, catParam]);
 
   const filtered = docs.filter((d) =>
     !search || d.title.toLowerCase().includes(search.toLowerCase())
