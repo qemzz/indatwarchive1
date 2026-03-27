@@ -92,6 +92,18 @@ const BrowsePage = () => {
       if (currentFolderId) {
         query = query.eq("folder_id", currentFolderId);
       }
+      // Filter by category from URL query param
+      if (catParam) {
+        const categoryMap: Record<string, string> = {
+          "past-papers": "Past Papers",
+          "books": "Books",
+          "notes": "Notes",
+        };
+        const categoryName = categoryMap[catParam];
+        if (categoryName) {
+          query = query.eq("category", categoryName);
+        }
+      }
       if (filterClass !== "all") query = query.eq("class_level", filterClass);
       if (filterSubject !== "all") query = query.eq("subject", filterSubject);
       if (filterYear !== "all") query = query.eq("year", filterYear);
