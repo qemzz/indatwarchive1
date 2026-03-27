@@ -37,6 +37,8 @@ interface FolderItem {
 const BrowsePage = () => {
   const { t } = useI18n();
   const { subjects, categories: cats, years: yearsList } = useLookups();
+  const [searchParams] = useSearchParams();
+  const catParam = searchParams.get("cat");
   const [docs, setDocs] = useState<Doc[]>([]);
   const [folders, setFolders] = useState<FolderItem[]>([]);
   const [allFolders, setAllFolders] = useState<FolderItem[]>([]);
