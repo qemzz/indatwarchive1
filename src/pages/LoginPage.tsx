@@ -23,10 +23,19 @@ const LoginPage = () => {
   const [fullName, setFullName] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const { login, signup } = useAuth();
   const navigate = useNavigate();
   const { t, lang, setLang } = useI18n();
   const { theme, toggleTheme } = useTheme();
+
+  useEffect(() => {
+    const saved = localStorage.getItem("rememberedEmail");
+    if (saved) {
+      setEmail(saved);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
