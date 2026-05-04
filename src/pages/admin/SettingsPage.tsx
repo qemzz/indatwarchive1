@@ -4,7 +4,7 @@ import { useLookups } from "@/hooks/useLookups";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, X, BookOpen, Tag, Calendar } from "lucide-react";
+import { Plus, X, BookOpen, Tag, Calendar, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -40,7 +40,99 @@ const SettingsPage = () => {
           onUpdate={refetch}
         />
       </div>
+
+      <div className="mt-6">
+        <ChangePasswordCard />
+      </div>
     </div>
+  );
+};
+
+const ChangePasswordCard = () => {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData.user?.email;
+      if (!email) {
+        toast.error("Not signed in");
+        return;
+      }
+      // Verify current password
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: currentPassword,
+      });
+      if (signInError) {
+        toast.error("Current password is incorrect");
+        return;
+      }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Password updated successfully");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Card className="max-w-md">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-display flex items-center gap-2">
+          <Lock className="h-4 w-4" /> Change Password
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <Input
+            type="password"
+            placeholder="Current password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+          />
+          <Input
+            type="password"
+            placeholder="New password (min 6 chars)"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+          <Input
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+          <Button type="submit" disabled={submitting} className="w-full">
+            {submitting ? "Updating..." : "Update Password"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 
