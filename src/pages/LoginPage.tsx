@@ -54,6 +54,11 @@ const LoginPage = () => {
         if (error) {
           toast.error(error);
         } else {
+          if (rememberMe) {
+            localStorage.setItem("rememberedEmail", email);
+          } else {
+            localStorage.removeItem("rememberedEmail");
+          }
           navigate("/admin");
         }
       }
