@@ -4,7 +4,7 @@ import { useLookups } from "@/hooks/useLookups";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, X, BookOpen, Tag, Calendar } from "lucide-react";
+import { Plus, X, BookOpen, Tag, Calendar, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
