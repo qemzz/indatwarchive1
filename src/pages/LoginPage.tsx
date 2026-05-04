@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BookOpen, Sun, Moon, Globe } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,10 +23,19 @@ const LoginPage = () => {
   const [fullName, setFullName] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const { login, signup } = useAuth();
   const navigate = useNavigate();
   const { t, lang, setLang } = useI18n();
   const { theme, toggleTheme } = useTheme();
+
+  useEffect(() => {
+    const saved = localStorage.getItem("rememberedEmail");
+    if (saved) {
+      setEmail(saved);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +54,11 @@ const LoginPage = () => {
         if (error) {
           toast.error(error);
         } else {
+          if (rememberMe) {
+            localStorage.setItem("rememberedEmail", email);
+          } else {
+            localStorage.removeItem("rememberedEmail");
+          }
           navigate("/admin");
         }
       }
@@ -93,6 +108,12 @@ const LoginPage = () => {
               <Label htmlFor="password">{t("label.password")}</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
             </div>
+            {!isSignup && (
+              <div className="flex items-center space-x-2">
+                <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v) => setRememberMe(v === true)} />
+                <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">Remember me</Label>
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={submitting}>
               {submitting ? "..." : isSignup ? "Sign Up" : t("label.signIn")}
             </Button>
