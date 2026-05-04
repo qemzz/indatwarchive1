@@ -108,6 +108,12 @@ const LoginPage = () => {
               <Label htmlFor="password">{t("label.password")}</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
             </div>
+            {!isSignup && (
+              <div className="flex items-center space-x-2">
+                <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v) => setRememberMe(v === true)} />
+                <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">Remember me</Label>
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={submitting}>
               {submitting ? "..." : isSignup ? "Sign Up" : t("label.signIn")}
             </Button>
