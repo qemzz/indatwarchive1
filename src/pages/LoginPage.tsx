@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -109,9 +110,28 @@ const LoginPage = () => {
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
             </div>
             {!isSignup && (
-              <div className="flex items-center space-x-2">
-                <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v) => setRememberMe(v === true)} />
-                <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">Remember me</Label>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v) => setRememberMe(v === true)} />
+                  <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">Remember me</Label>
+                </div>
+                <button
+                  type="button"
+                  className="text-xs text-primary underline"
+                  onClick={async () => {
+                    if (!email) {
+                      toast.error("Enter your email above first");
+                      return;
+                    }
+                    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                      redirectTo: `${window.location.origin}/reset-password`,
+                    });
+                    if (error) toast.error(error.message);
+                    else toast.success("Password reset link sent. Check your email.");
+                  }}
+                >
+                  Forgot password?
+                </button>
               </div>
             )}
             <Button type="submit" className="w-full" disabled={submitting}>
