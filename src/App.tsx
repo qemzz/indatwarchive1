@@ -13,6 +13,7 @@ import AdminLayout from "@/layouts/AdminLayout";
 import HomePage from "@/pages/HomePage";
 import BrowsePage from "@/pages/BrowsePage";
 import LoginPage from "@/pages/LoginPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
 
 import DashboardPage from "@/pages/admin/DashboardPage";
@@ -46,6 +47,7 @@ const App = () => (
 
                 {/* Auth */}
                 <Route path="/admin/login" element={<LoginPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                 {/* Admin */}
                 <Route path="/admin" element={<AdminLayout />}>
